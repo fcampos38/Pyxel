@@ -42,7 +42,8 @@ class Excel():
             raise PyxelException(f"Microsoft Excel would not respond. An excel object could be be instantiated: {error1}")
         
         # Chooses whether to run the dispatch commands in the background or in visible mode
-        self.xldispatch.Visible = not(BackgroundExecution)
+        self.XlDispatch.Visible = not(BackgroundExecution)
+        self.XlDispatch.DisplayAlerts = not(BackgroundExecution)
 
         # Initiates a workbook object
         # Opens it if exists and OverWriteIfExists is False, otherwise creates a new workbook
@@ -72,11 +73,31 @@ class Excel():
         
         # Gets all workbook's sheets into an array like attribute
         self.worksheets = tuple((sheet for sheet in self.WorkbookObj.Sheets))
+    
+    def save(self, SaveAs=None):
+        """
+        :param: SaveAs: string representing the full path to use when saving he workbook, default is the WorkbookObj original path
+
+        :return: None
+        """
         
-                    
-    def __del__(self):
+        # When SaveAs is defined as a different path than the PathToWorkbook, the WorkbookObj will be referring to two workbooks at the same time
+        self.WorkbookObj.SaveAs(SaveAs if SaveAs is not None else self.PathToWorkbook)
+        
+    def close(self, Save=True):
+        """
+        :param: Save: boolean stating whether or not to save the workbook before closing it
+
+        :return: None
+        """
+        
+        # Closes the workbook object
+        self.WorkbookObj.Close(Save)
         # Quits Microsoft Excel (terminates the dispatch command)
         self.XlDispatch.Quit()
+                    
+    def __del__(self):
+        self.close(Save=False)
         
     def __repr__(self):
         return chr(39) + f'ExcelWorkbookObject for "{self.PathToWorkbook}"' + chr(39)
